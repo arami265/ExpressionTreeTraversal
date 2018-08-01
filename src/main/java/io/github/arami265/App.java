@@ -19,14 +19,14 @@ public class App
     {
         NodeHelper helper = new NodeHelper();
         //FOR NOW THE EXPRESSION IS HARDCODED FOR SIMPLE PARSING
-        //BETTER INPUT WILL BE ADDED IN MAYBE ANOTHER HELPER/FUNCTION CLASS
-        String expression = "( 10.24 + 5.4 * 2.5 ) / 6.7 + ( 12.5 * 20.67 + 10 ) * 25";
-
+        //TODO:ADD BETTER INPUT IN MAYBE ANOTHER HELPER/FUNCTION CLASS
+        //String expression = "( 10.24 + 5.4 * 2.5 ) / 6.7 + ( 12.5 * 20.67 + 10 ) * 25";
+        String expression = "( ( 15 / ( 7 - ( 1 + 1 ) ) ) * 3 ) - ( 2 + ( 1 + 1 ) )";
         //
         Node root = helper.buildTree(expression);
 
         //IF TREE BUILDING IS UNSUCCESSFUL
-        //(MORE ERROR CHECKING TO BE ADDED IN NODEHELPER
+        //TODO:ADD ERROR CHECKING IN NODEHELPER
         if(root == null)
         {
             System.out.println("Something's wrong with the expression...\n");
@@ -34,7 +34,11 @@ public class App
 
         else
         {
-            System.out.println(expression + "\nResult: " + helper.calc(root));
+            System.out.println("Expression: " + expression + "\nResult: " + helper.calc(root));
+            System.out.print("Postorder traversal: ");
+            helper.postorder(root);
+            System.out.print("\nPreorder traversal: ");
+            helper.preorder(root);
         }
 
     }

@@ -7,14 +7,49 @@ import java.util.LinkedList;
 
 public class NodeHelper {
     //FOR CREATING ANOTHER BRANCH IN THE TREE
-    public void createBranch(Deque<Character> opStack, Deque<Node> nodeStack)
+    public void createBranch(Deque<Node> nodeStack, char operator)
     {
         Node right = nodeStack.pop();
         Node left = nodeStack.pop();
 
-        Node opNode = new Node(opStack.pop(), left, right);
+        Node opNode = new Node(operator, left, right);
 
         nodeStack.push(opNode);
+    }
+
+    //Preorder traversal
+    //Nodes are printed before their children
+    public void preorder(Node currentNode)
+    {
+        Node cNode = currentNode;
+
+        if(cNode.isOperator())
+            System.out.print(cNode.getOperator() + " ");
+        else
+            System.out.print(cNode.getValue() + " ");
+
+        if(cNode.getLeft() != null)
+            postorder(cNode.getLeft());
+        if(cNode.getRight() != null)
+            postorder(cNode.getRight());
+    }
+
+    //Postorder traversal
+    //Children are printed before parent nodes,
+    //resulting in a conversion to Reverse Polish Notation
+    public void postorder(Node currentNode)
+    {
+        Node cNode = currentNode;
+
+        if(cNode.getLeft() != null)
+            postorder(cNode.getLeft());
+        if(cNode.getRight() != null)
+            postorder(cNode.getRight());
+
+        if(cNode.isOperator())
+            System.out.print(cNode.getOperator() + " ");
+        else
+            System.out.print(cNode.getValue() + " ");
     }
 
     //CALCULATES THE VALUE OF THE EXPRESSION RECURSIVELY VIA THE TREE
@@ -52,69 +87,58 @@ public class NodeHelper {
     //ELSE WILL RETURN NULL
     public Node buildTree(String expression)
     {
-        Deque<Character> opStack = new LinkedList<>();
+        Deque<Character> operatorStack = new LinkedList<>();
         Deque<Node> nodeStack = new LinkedList<>();
 
         //TOKENIZATION
         //SIMPLIFIED FOR NOW
         String[] tokens = StringUtils.split(expression);
 
-        for(int i = 0; i < tokens.length; i++)
-        {
-            tokens[i].trim();
-        }
-
         //ITERATE THROUGH TOKENS
+        main:
         for(int i  = 0; i < tokens.length; i++)
         {
+            tokens[i].trim();
+
             if(tokens[i].equals("("))
-                opStack.push(tokens[i].charAt(0));
+                operatorStack.push(tokens[i].charAt(0));
 
-            //PRECEDENCE NEEDS TO BE CHECKED IF A + OR - IS FOUND
-            else if(tokens[i].equals("+") || tokens[i].equals("-"))
+
+            else if(tokens[i].equals("+") || tokens[i].equals("-") || tokens[i].equals("*") || tokens[i].equals("/"))
             {
-                if(!opStack.isEmpty())
+                while(!operatorStack.isEmpty())
                 {
-                    if(opStack.peek() == '*' || opStack.peek() == '/')
-                    {
-                        createBranch(opStack, nodeStack);
-
-                        opStack.push(tokens[i].charAt(0));
-                    }
+                    //PRECEDENCE NEEDS TO BE CHECKED IF A + OR - IS FOUND
+                    if((tokens[i].equals("+") || tokens[i].equals("-")) && (operatorStack.peek() == '*' || operatorStack.peek() == '/'))
+                        createBranch(nodeStack, operatorStack.pop());
                     else
-                        opStack.push(tokens[i].charAt(0));
+                        break;
                 }
+                operatorStack.push(tokens[i].charAt(0));
             }
-
-            else if (tokens[i].equals("*") || tokens[i].equals("/"))
-                opStack.push(tokens[i].charAt(0));
 
             else if(tokens[i].equals(")"))
             {
-                //FLAG TO CHECK IF MATCHING OPENING PARENTHESIS IS FOUND
-                boolean parFlag = false;
-
-                while(parFlag == false && !opStack.isEmpty())
+                while(!operatorStack.isEmpty())
                 {
-                    if(opStack.peek() == '(')
+                    if(operatorStack.peek() == '(')
                     {
-                        parFlag = true;
-                        opStack.pop();
+                        operatorStack.pop();
+                        continue main;
                     }
 
                     //BRANCHES ARE CREATED WHILE LOOKING FOR PARENTHESIS
-                    else if (!opStack.isEmpty() && nodeStack.size() >= 2)
-                    {
-                        createBranch(opStack, nodeStack);
-                    }
-
-                    //IF NO MATCHING PARENTHESIS IS FOUND
                     else
-                        return null;
+                    {
+                        createBranch(nodeStack, operatorStack.pop());
+                    }
                 }
+                //IF NO MATCHING PARENTHESIS IS FOUND
+                throw new IllegalStateException("Unbalanced parentheses");
             }
 
             //IF THE TOKEN IS NUMERIC
+            //TODO: ADD BETTER CHECK
             else
             {
                 Node valNode = new Node(Double.parseDouble(tokens[i]));
@@ -124,19 +148,12 @@ public class NodeHelper {
 
         //AFTER READING TOKENS, REMAINING OPERATORS
         //ON THE STACK ARE PROCESSED
-        while(!opStack.isEmpty())
-        {
-            //IF THERE ARE HANGING PARENTHESES,
-            //THE EXPRESSION IS NOT VALID
-            if(opStack.peek() == '(' || opStack.peek() == ')')
-                return null;
-
-            else
-                createBranch(opStack, nodeStack);
-        }
+        while(!operatorStack.isEmpty())
+            createBranch(nodeStack, operatorStack.pop());
 
         //CHECK FOR POSSIBLE ERRORS
-        if(opStack.isEmpty() && nodeStack.size() == 1)
+        //STACK SHOULD CONSIST OF A SINGLE NODE
+        if(nodeStack.size() == 1)
         {
             Node root = nodeStack.pop();
 
