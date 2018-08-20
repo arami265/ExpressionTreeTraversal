@@ -18,15 +18,20 @@ public class App
     public static void main( String[] args )
     {
         NodeHelper helper = new NodeHelper();
-        //FOR NOW THE EXPRESSION IS HARDCODED FOR SIMPLE PARSING
+        //For now the expression is hardcoded.
+
+        //The whitespace had been used for easier parsing during development
+        //but is now irrelevant; the expression may or may not contain whitespace
+        //and will still work.
+
         //TODO:ADD BETTER INPUT IN MAYBE ANOTHER HELPER/FUNCTION CLASS
         //String expression = "( 10.24 + 5.4 * 2.5 ) / 6.7 + ( 12.5 * 20.67 + 10 ) * 25";
-        String expression = "( ( 15 / ( 7 - ( 1 + 1 ) ) ) * 3 ) - ( 2 + ( 1 + 1 ) )";
+        String expression = "((15/(7-(1+1)))*3)-(2+(1+1))";
         //
         Node root = helper.buildTree(expression);
 
-        //IF TREE BUILDING IS UNSUCCESSFUL
-        //TODO:ADD ERROR CHECKING IN NODEHELPER
+        //If tree building is unsuccessful
+        //TODO:ADD BETTER ERROR CHECKING IN NODEHELPER
         if(root == null)
         {
             System.out.println("Something's wrong with the expression...\n");

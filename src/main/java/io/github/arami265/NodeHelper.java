@@ -1,12 +1,92 @@
 package io.github.arami265;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Deque;
 import java.util.LinkedList;
 
 public class NodeHelper {
-    //FOR CREATING ANOTHER BRANCH IN THE TREE
+    //Will return root node of tree if successful;
+    //Else will return null
+    public Node buildTree(String expression)
+    {
+        Helper helper = new Helper();
+        Deque<Character> operatorStack = new LinkedList<>();
+        Deque<Node> nodeStack = new LinkedList<>();
+
+        //Tokenization
+
+        String[] tokens = helper.tokenize(expression);
+
+        //Iterate through tokens
+        main:
+        for(int i  = 0; i < tokens.length; i++)
+        {
+            tokens[i].trim();
+
+            if(tokens[i].equals("("))
+                operatorStack.push(tokens[i].charAt(0));
+
+
+            else if(tokens[i].equals("+") || tokens[i].equals("-") || tokens[i].equals("*") || tokens[i].equals("/"))
+            {
+                while(!operatorStack.isEmpty())
+                {
+                    //Precedence needs to be checked if a + or - is found
+                    if((tokens[i].equals("+") || tokens[i].equals("-")) && (operatorStack.peek() == '*' || operatorStack.peek() == '/'))
+                        createBranch(nodeStack, operatorStack.pop());
+                    else
+                        break;
+                }
+                operatorStack.push(tokens[i].charAt(0));
+            }
+
+            else if(tokens[i].equals(")"))
+            {
+                while(!operatorStack.isEmpty())
+                {
+                    if(operatorStack.peek() == '(')
+                    {
+                        operatorStack.pop();
+                        continue main;
+                    }
+
+                    //Branches are created while looking for parenthesis
+                    else
+                    {
+                        createBranch(nodeStack, operatorStack.pop());
+                    }
+                }
+                //If no matching parenthesis is found
+                throw new IllegalStateException("Unbalanced parentheses");
+            }
+
+            //If the token is numeric
+            //TODO: Add better check
+            else
+            {
+                Node valNode = new Node(Double.parseDouble(tokens[i]));
+                nodeStack.push(valNode);
+            }
+        }
+
+        //After reading tokens, remaining operators
+        //on the stack are processed
+        while(!operatorStack.isEmpty())
+            createBranch(nodeStack, operatorStack.pop());
+
+        //Check for possible errors
+        //Stack should consist of a single node
+        if(nodeStack.size() == 1)
+        {
+            Node root = nodeStack.pop();
+
+            return root;
+        }
+        else
+            return null;
+
+    }
+
+    //For creating another branch in the tree
     public void createBranch(Deque<Node> nodeStack, char operator)
     {
         Node right = nodeStack.pop();
@@ -52,7 +132,7 @@ public class NodeHelper {
             System.out.print(cNode.getValue() + " ");
     }
 
-    //CALCULATES THE VALUE OF THE EXPRESSION RECURSIVELY VIA THE TREE
+    //Calculates the value of the expression recursively via the tree
     public double calc(Node currentNode)
     {
         Node cNode = currentNode;
@@ -81,86 +161,5 @@ public class NodeHelper {
             result = cNode.getValue();
 
         return result;
-    }
-
-    //WILL RETURN ROOT NODE OF TREE IF SUCCESSFUL;
-    //ELSE WILL RETURN NULL
-    public Node buildTree(String expression)
-    {
-        Deque<Character> operatorStack = new LinkedList<>();
-        Deque<Node> nodeStack = new LinkedList<>();
-
-        //TOKENIZATION
-        //SIMPLIFIED FOR NOW
-        String[] tokens = StringUtils.split(expression);
-
-        //ITERATE THROUGH TOKENS
-        main:
-        for(int i  = 0; i < tokens.length; i++)
-        {
-            tokens[i].trim();
-
-            if(tokens[i].equals("("))
-                operatorStack.push(tokens[i].charAt(0));
-
-
-            else if(tokens[i].equals("+") || tokens[i].equals("-") || tokens[i].equals("*") || tokens[i].equals("/"))
-            {
-                while(!operatorStack.isEmpty())
-                {
-                    //PRECEDENCE NEEDS TO BE CHECKED IF A + OR - IS FOUND
-                    if((tokens[i].equals("+") || tokens[i].equals("-")) && (operatorStack.peek() == '*' || operatorStack.peek() == '/'))
-                        createBranch(nodeStack, operatorStack.pop());
-                    else
-                        break;
-                }
-                operatorStack.push(tokens[i].charAt(0));
-            }
-
-            else if(tokens[i].equals(")"))
-            {
-                while(!operatorStack.isEmpty())
-                {
-                    if(operatorStack.peek() == '(')
-                    {
-                        operatorStack.pop();
-                        continue main;
-                    }
-
-                    //BRANCHES ARE CREATED WHILE LOOKING FOR PARENTHESIS
-                    else
-                    {
-                        createBranch(nodeStack, operatorStack.pop());
-                    }
-                }
-                //IF NO MATCHING PARENTHESIS IS FOUND
-                throw new IllegalStateException("Unbalanced parentheses");
-            }
-
-            //IF THE TOKEN IS NUMERIC
-            //TODO: ADD BETTER CHECK
-            else
-            {
-                Node valNode = new Node(Double.parseDouble(tokens[i]));
-                nodeStack.push(valNode);
-            }
-        }
-
-        //AFTER READING TOKENS, REMAINING OPERATORS
-        //ON THE STACK ARE PROCESSED
-        while(!operatorStack.isEmpty())
-            createBranch(nodeStack, operatorStack.pop());
-
-        //CHECK FOR POSSIBLE ERRORS
-        //STACK SHOULD CONSIST OF A SINGLE NODE
-        if(nodeStack.size() == 1)
-        {
-            Node root = nodeStack.pop();
-
-            return root;
-        }
-        else
-            return null;
-
     }
 }

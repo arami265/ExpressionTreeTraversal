@@ -9,9 +9,9 @@ public class Node
     Node left;
     Node right;
 
-    //CONSTRUCTORS
+    //Constructors
     //
-    //IN CASE OF OPERAND
+    //In case of operand
     public Node(double val)
     {
         isOperator = false;
@@ -22,7 +22,7 @@ public class Node
 
     }
 
-    //IN CASE OF OPERATOR AND LEAVES
+    //In case of operator and leaves
     public Node(char opChar, Node l, Node r)
     {
         isOperator = true;
@@ -32,7 +32,7 @@ public class Node
         right = r;
     }
 
-    //GET FUNCTIONS
+    //Get functions
     public boolean isOperator()
     { return isOperator; }
 
